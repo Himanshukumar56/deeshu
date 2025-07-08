@@ -38,9 +38,7 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center p-4">
       {/* Test div to check if Tailwind is working */}
-      <div className="bg-red-500 text-white p-4 mb-4 rounded">
-        If you see this red box, Tailwind is working!
-      </div>
+     
 
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
