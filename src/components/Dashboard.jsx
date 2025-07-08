@@ -141,9 +141,7 @@ const Dashboard = () => {
                       <h3 className="text-3xl font-bold text-gray-800 dark:text-white">
                         {time}
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm">
-                        Friday, Jul 4
-                      </p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">Friday, Jul 4</p>
                     </div>
                   </div>
 
@@ -194,23 +192,21 @@ const Dashboard = () => {
                         <h3 className="text-3xl font-bold text-gray-800 dark:text-white">
                           {time}
                         </h3>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm">
-                          Friday, Jul 4
-                        </p>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">Friday, Jul 4</p>
                       </div>
                     </div>
 
                     {weather && (
-                      <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-2xl">
+                      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-600 p-4 rounded-2xl">
                         <div className="flex items-center">
                           <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
                             <span className="text-2xl">☀️</span>
                           </div>
                           <div className="ml-4">
-                            <p className="text-2xl font-bold text-gray-800">
+                            <p className="text-2xl font-bold text-gray-800 dark:text-white">
                               {weather.main.temp}°C
                             </p>
-                            <p className="text-gray-600">
+                            <p className="text-gray-600 dark:text-gray-300">
                               {weather.weather[0].main}
                             </p>
                           </div>
@@ -228,21 +224,21 @@ const Dashboard = () => {
             {userData && userData.partnerId && <DailyGoals />}
 
             {/* Upcoming Together */}
-            <div className="bg-white/80 backdrop-blur-sm p-8 rounded-3xl shadow-xl border border-purple-100">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-8 rounded-3xl shadow-xl border border-purple-100 dark:border-gray-700">
               <div className="flex items-center mb-6">
                 <Calendar className="text-purple-500 mr-3" size={28} />
-                <h2 className="text-2xl font-bold text-gray-800">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
                   Upcoming Together
                 </h2>
               </div>
 
               <div className="space-y-4">
-                <div className="text-center text-gray-500">
+                <div className="text-center text-gray-500 dark:text-gray-400">
                   Nothing planned yet.
                 </div>
               </div>
 
-              <div className="mt-6 pt-6 border-t border-gray-200">
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <Link
                   to="/shared-calendar"
                   className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 px-6 rounded-2xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold flex items-center justify-center"
