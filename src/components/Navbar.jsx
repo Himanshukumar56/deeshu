@@ -65,11 +65,11 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link to="/dashboard" className="text-gray-500 hover:text-brand-primary block px-3 py-2 rounded-md text-base font-medium">Dashboard</Link>
-            <Link to="/scrapbook" className="text-gray-500 hover:text-brand-primary block px-3 py-2 rounded-md text-base font-medium">Memories</Link>
-            <Link to="/communication" className="text-gray-500 hover:text-brand-primary block px-3 py-2 rounded-md text-base font-medium">Notes</Link>
-            <Link to="/shared-calendar" className="text-gray-500 hover:text-brand-primary block px-3 py-2 rounded-md text-base font-medium">Calendar</Link>
-            <Link to="/profile" className="text-gray-500 hover:text-brand-primary block px-3 py-2 rounded-md text-base font-medium">Profile</Link>
+            <Link to="/dashboard" className="text-gray-500 dark:text-gray-300 hover:text-brand-primary block px-3 py-2 rounded-md text-base font-medium">Dashboard</Link>
+            <Link to="/scrapbook" className="text-gray-500 dark:text-gray-300 hover:text-brand-primary block px-3 py-2 rounded-md text-base font-medium">Memories</Link>
+            <Link to="/communication" className="text-gray-500 dark:text-gray-300 hover:text-brand-primary block px-3 py-2 rounded-md text-base font-medium">Notes</Link>
+            <Link to="/shared-calendar" className="text-gray-500 dark:text-gray-300 hover:text-brand-primary block px-3 py-2 rounded-md text-base font-medium">Calendar</Link>
+            <Link to="/profile" className="text-gray-500 dark:text-gray-300 hover:text-brand-primary block px-3 py-2 rounded-md text-base font-medium">Profile</Link>
             <button onClick={handleLogout} className="w-full text-left bg-red-600 text-white block px-3 py-2 rounded-md text-base font-medium">
               Logout
             </button>

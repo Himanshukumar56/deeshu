@@ -75,7 +75,7 @@ const Dashboard = () => {
           <div className="text-center mb-12">
             <div className="flex justify-center items-center mb-4">
               <Heart className="text-rose-500 mr-3" size={32} />
-              <h1 className="text-6xl font-bold bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 bg-clip-text text-transparent dark:text-white">
+              <h1 className="text-6xl font-bold bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 bg-clip-text text-transparent dark:bg-none dark:text-white">
                 Our Journey Together
               </h1>
               <Heart className="text-rose-500 ml-3" size={32} />
