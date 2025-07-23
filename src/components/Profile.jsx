@@ -1,32 +1,73 @@
-import React, { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { db } from '../firebase';
-import { doc, updateDoc } from 'firebase/firestore';
-import { User, Mail, MapPin, Save } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
+import { db } from "../firebase";
+import { doc, setDoc, deleteDoc } from "firebase/firestore";
+import { User, Mail, MapPin, Save, Trash2 } from "lucide-react";
 
 const Profile = () => {
   const { userData, user } = useAuth();
-  const [username, setUsername] = useState(userData?.username || '');
-  const [location, setLocation] = useState(userData?.location || '');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [username, setUsername] = useState(userData?.username || "");
+  const [location, setLocation] = useState(userData?.location || "");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (userData) {
+      setUsername(userData.username || "");
+      setLocation(userData.location || "");
+    }
+  }, [userData]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
     setLoading(true);
 
+    if (!user) {
+      setError("You must be logged in to update your profile.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const userDocRef = doc(db, 'users', user.uid);
-      await updateDoc(userDocRef, {
-        username,
-        location,
-      });
-      setSuccess('Profile updated successfully!');
+      const userDocRef = doc(db, "users", user.uid);
+      await setDoc(
+        userDocRef,
+        {
+          username,
+          location,
+        },
+        { merge: true }
+      );
+      setSuccess("Profile updated successfully!");
     } catch (err) {
-      setError('Failed to update profile.');
+      setError("Failed to update profile.");
+      console.error(err);
+    }
+    setLoading(false);
+  };
+
+  const handleDeleteProfile = async () => {
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    if (!user) {
+      setError("You must be logged in to delete your profile.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+      await deleteDoc(userDocRef);
+      setUsername("");
+      setLocation("");
+      setSuccess("Profile deleted successfully!");
+    } catch (err) {
+      setError("Failed to delete profile.");
       console.error(err);
     }
     setLoading(false);
@@ -62,7 +103,7 @@ const Profile = () => {
                 <Mail className="absolute top-1/2 -translate-y-1/2 left-4 text-gray-400" />
                 <input
                   type="email"
-                  value={userData?.email || ''}
+                  value={userData?.email || ""}
                   disabled
                   className="w-full p-3 pl-12 border rounded-full bg-gray-100 cursor-not-allowed"
                 />
@@ -72,25 +113,36 @@ const Profile = () => {
                 <input
                   type="text"
                   value={location}
-                  onChange={(e) => setLocation(e.targe.value)}
+                  onChange={(e) => setLocation(e.target.value)}
                   placeholder="Location (e.g., New York, NY)"
                   className="w-full p-3 pl-12 border rounded-full focus:ring-rose-500 focus:border-rose-500 transition-all"
                 />
               </div>
             </div>
-            <div className="flex justify-end mt-8">
+            <div className="flex justify-end mt-8 space-x-4">
+              <button
+                type="button"
+                onClick={handleDeleteProfile}
+                className="inline-flex items-center bg-red-500 text-white py-3 px-6 rounded-full hover:bg-red-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
+                disabled={loading}
+              >
+                <Trash2 className="mr-2" size={20} />
+                {loading ? "Deleting..." : "Delete Profile"}
+              </button>
               <button
                 type="submit"
                 className="inline-flex items-center bg-gradient-to-r from-rose-500 to-pink-500 text-white py-3 px-6 rounded-full hover:from-rose-600 hover:to-pink-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
                 disabled={loading}
               >
                 <Save className="mr-2" size={20} />
-                {loading ? 'Saving...' : 'Save Changes'}
+                {loading ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </form>
           {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
-          {success && <p className="text-green-500 mt-4 text-center">{success}</p>}
+          {success && (
+            <p className="text-green-500 mt-4 text-center">{success}</p>
+          )}
         </div>
       </div>
     </div>

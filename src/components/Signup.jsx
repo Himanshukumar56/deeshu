@@ -52,8 +52,13 @@ const Signup = () => {
         if (inviteDoc.exists()) {
           partnerId = inviteDoc.data().userId;
           // Link the two users
-          await setDoc(doc(db, "users", user.uid), { partnerId });
-          await setDoc(doc(db, "users", partnerId), { partnerId: user.uid });
+          await setDoc(doc(db, "users", user.uid), { 
+            partnerId,
+            username,
+            email,
+            location: ''
+          });
+          await setDoc(doc(db, "users", partnerId), { partnerId: user.uid }, { merge: true });
           // Delete the invite code
           await deleteDoc(doc(db, "invites", inviteCode));
         } else {
@@ -64,7 +69,12 @@ const Signup = () => {
         // Generate a new invite code for the first user
         const newInviteCode = Math.random().toString(36).substring(2, 8);
         await setDoc(doc(db, "invites", newInviteCode), { userId: user.uid });
-        await setDoc(doc(db, "users", user.uid), { inviteCode: newInviteCode, username: username });
+        await setDoc(doc(db, "users", user.uid), { 
+          inviteCode: newInviteCode, 
+          username: username,
+          email: email,
+          location: ''
+        });
       }
 
       navigate("/dashboard");

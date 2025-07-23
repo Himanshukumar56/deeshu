@@ -3,6 +3,8 @@ import { db } from '../firebase';
 import { collection, query, where, getDocs, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { useAuth } from '../hooks/useAuth';
 import { Check, X } from 'lucide-react';
+import Shimmer from './Shimmer';
+import toast from 'react-hot-toast';
 
 const ConnectionRequests = () => {
   const { user } = useAuth();
@@ -37,23 +39,27 @@ const ConnectionRequests = () => {
   }, [user]);
 
   const handleRequest = async (requestId, fromId, accept) => {
+    const toastId = toast.loading('Updating request...');
     try {
       const requestDocRef = doc(db, 'connectionRequests', requestId);
       if (accept) {
         await updateDoc(requestDocRef, { status: 'accepted' });
         await updateDoc(doc(db, 'users', user.uid), { partnerId: fromId });
         await updateDoc(doc(db, 'users', fromId), { partnerId: user.uid });
+        toast.success('Connection request accepted!', { id: toastId });
       } else {
         await updateDoc(requestDocRef, { status: 'declined' });
+        toast.success('Connection request declined.', { id: toastId });
       }
       setRequests(requests.filter((req) => req.id !== requestId));
     } catch (err) {
       console.error('Failed to update request.', err);
+      toast.error('Failed to update request.', { id: toastId });
     }
   };
 
   if (loading) {
-    return <p>Loading requests...</p>;
+    return <Shimmer />;
   }
 
   return (

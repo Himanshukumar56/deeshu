@@ -20,10 +20,29 @@ const Dashboard = () => {
   const { userData } = useAuth();
   const [partnerData, setPartnerData] = useState(null);
   const [time, setTime] = useState("");
-  const [weather] = useState({
-    main: { temp: 22 },
-    weather: [{ main: "Sunny", icon: "01d" }],
-  });
+  const [weather, setWeather] = useState(null);
+
+  useEffect(() => {
+    const fetchWeather = async () => {
+      if (userData?.location) {
+        try {
+          const response = await fetch(
+            `https://api.openweathermap.org/data/2.5/weather?q=${userData.location}&units=metric&appid=${import.meta.env.VITE_OPENWEATHERMAP_API_KEY}`
+          );
+          const data = await response.json();
+          if (response.ok) {
+            setWeather(data);
+          } else {
+            console.error("Failed to fetch weather data:", data.message);
+          }
+        } catch (error) {
+          console.error("Error fetching weather data:", error);
+        }
+      }
+    };
+
+    fetchWeather();
+  }, [userData?.location]);
 
   useEffect(() => {
     const fetchPartnerData = async () => {
@@ -52,19 +71,19 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 dark:from-gray-800 dark:via-gray-900 dark:to-black">
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-black">
       {/* Floating Hearts Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 text-rose-200 opacity-20">
+        <div className="absolute top-20 left-10 text-rose-200 dark:text-rose-800 opacity-20">
           <Heart size={24} />
         </div>
-        <div className="absolute top-40 right-20 text-pink-200 opacity-20">
+        <div className="absolute top-40 right-20 text-pink-200 dark:text-pink-800 opacity-20">
           <Heart size={20} />
         </div>
-        <div className="absolute bottom-32 left-20 text-purple-200 opacity-20">
+        <div className="absolute bottom-32 left-20 text-purple-200 dark:text-purple-800 opacity-20">
           <Heart size={28} />
         </div>
-        <div className="absolute bottom-20 right-10 text-rose-200 opacity-20">
+        <div className="absolute bottom-20 right-10 text-rose-200 dark:text-rose-800 opacity-20">
           <Heart size={16} />
         </div>
       </div>
@@ -75,7 +94,7 @@ const Dashboard = () => {
           <div className="text-center mb-12">
             <div className="flex justify-center items-center mb-4">
               <Heart className="text-rose-500 mr-3" size={32} />
-              <h1 className="text-6xl font-bold bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 bg-clip-text text-transparent dark:bg-none dark:text-white">
+              <h1 className="text-6xl font-bold bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 bg-clip-text text-transparent dark:from-rose-400 dark:via-pink-400 dark:to-purple-400 dark:text-transparent">
                 Our Journey Together
               </h1>
               <Heart className="text-rose-500 ml-3" size={32} />

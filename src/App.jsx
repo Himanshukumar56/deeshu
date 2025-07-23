@@ -10,12 +10,15 @@ import FindPartner from './components/FindPartner';
 import SharedCalendar from './components/SharedCalendar';
 import Profile from './components/Profile';
 import { useAuth } from './hooks/useAuth';
+import { Toaster } from 'react-hot-toast';
+import { ThemeProvider } from './context/ThemeContext.jsx';
 
 function App() {
   const { user } = useAuth();
 
   return (
     <div className="bg-gray-50 font-poppins dark:bg-gray-900">
+      <Toaster position="top-center" reverseOrder={false} />
       {user && <Navbar />}
       <main>
         <Routes>
@@ -78,7 +81,9 @@ function App() {
 function AppWrapper() {
   return (
     <Router>
-      <App />
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
     </Router>
   );
 }
