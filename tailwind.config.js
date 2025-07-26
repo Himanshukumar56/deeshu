@@ -1,15 +1,14 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: "class",
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
-        "custom-pink": "#FFD1DC",
-        "custom-purple": "#E0B0FF",
-        "custom-blue": "#A7C7E7",
-        "brand-primary": "#FF6B6B",
-        "brand-secondary": "#4ECDC4",
+        "brand-primary": "#4A90E2",
+        "brand-secondary": "#50E3C2",
+        "brand-dark": "#2c3e50",
+        "brand-light": "#ecf0f1",
+        "brand-accent": "#f39c12",
       },
       fontFamily: {
         poppins: ["Poppins", "sans-serif"],

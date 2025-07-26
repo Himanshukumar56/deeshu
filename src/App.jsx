@@ -10,15 +10,15 @@ import FindPartner from './components/FindPartner';
 import SharedCalendar from './components/SharedCalendar';
 import Profile from './components/Profile';
 import Notifications from './components/Notifications';
+import Memories from './components/Memories';
 import { useAuth } from './hooks/useAuth';
 import { Toaster } from 'react-hot-toast';
-import { ThemeProvider } from './context/ThemeContext.jsx';
 
 function App() {
   const { user } = useAuth();
 
   return (
-    <div className="bg-gray-50 font-poppins dark:bg-gray-900">
+    <div className="bg-gray-50 font-poppins">
       <Toaster position="top-center" reverseOrder={false} />
       {user && <Navbar />}
       <main>
@@ -81,6 +81,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/memories"
+          element={
+            <ProtectedRoute>
+              <Memories />
+            </ProtectedRoute>
+          }
+        />
         </Routes>
       </main>
     </div>
@@ -90,9 +98,7 @@ function App() {
 function AppWrapper() {
   return (
     <Router>
-      <ThemeProvider>
-        <App />
-      </ThemeProvider>
+      <App />
     </Router>
   );
 }

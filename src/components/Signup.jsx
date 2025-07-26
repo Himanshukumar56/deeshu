@@ -6,14 +6,30 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { auth, db } from "../firebase";
-import { setDoc, doc, getDoc, deleteDoc } from "firebase/firestore";
+import {
+  setDoc,
+  doc,
+  getDoc,
+  deleteDoc,
+  query,
+  collection,
+  where,
+  getDocs,
+} from "firebase/firestore";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  const isUsernameUnique = async (username) => {
+    const q = query(collection(db, "users"), where("username", "==", username));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.empty;
+  };
 
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
@@ -22,11 +38,20 @@ const Signup = () => {
       const user = result.user;
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (!userDoc.exists()) {
-        // If the user is new, create a new document for them
-        const username = user.email.split('@')[0] + Math.floor(Math.random() * 1000);
+        let newUsername = user.email.split("@")[0];
+        let usernameIsUnique = await isUsernameUnique(newUsername);
+        while (!usernameIsUnique) {
+          newUsername = `${user.email.split("@")[0]}${Math.floor(
+            Math.random() * 1000
+          )}`;
+          usernameIsUnique = await isUsernameUnique(newUsername);
+        }
         const newInviteCode = Math.random().toString(36).substring(2, 8);
         await setDoc(doc(db, "invites", newInviteCode), { userId: user.uid });
-        await setDoc(doc(db, "users", user.uid), { inviteCode: newInviteCode, username: username });
+        await setDoc(doc(db, "users", user.uid), {
+          inviteCode: newInviteCode,
+          username: newUsername,
+        });
       }
       navigate("/dashboard");
     } catch (err) {
@@ -37,6 +62,12 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (!(await isUsernameUnique(username))) {
+      setError("Username already exists. Please choose another one.");
+      return;
+    }
+
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -44,36 +75,36 @@ const Signup = () => {
         password
       );
       const user = userCredential.user;
-      const username = email.split('@')[0] + Math.floor(Math.random() * 1000);
 
       let partnerId = null;
       if (inviteCode) {
         const inviteDoc = await getDoc(doc(db, "invites", inviteCode));
         if (inviteDoc.exists()) {
           partnerId = inviteDoc.data().userId;
-          // Link the two users
-          await setDoc(doc(db, "users", user.uid), { 
+          await setDoc(doc(db, "users", user.uid), {
             partnerId,
             username,
             email,
-            location: ''
+            location: "",
           });
-          await setDoc(doc(db, "users", partnerId), { partnerId: user.uid }, { merge: true });
-          // Delete the invite code
+          await setDoc(
+            doc(db, "users", partnerId),
+            { partnerId: user.uid },
+            { merge: true }
+          );
           await deleteDoc(doc(db, "invites", inviteCode));
         } else {
           setError("Invalid invite code.");
           return;
         }
       } else {
-        // Generate a new invite code for the first user
         const newInviteCode = Math.random().toString(36).substring(2, 8);
         await setDoc(doc(db, "invites", newInviteCode), { userId: user.uid });
-        await setDoc(doc(db, "users", user.uid), { 
-          inviteCode: newInviteCode, 
+        await setDoc(doc(db, "users", user.uid), {
+          inviteCode: newInviteCode,
           username: username,
           email: email,
-          location: ''
+          location: "",
         });
       }
 
@@ -92,6 +123,23 @@ const Signup = () => {
         </div>
         {error && <p className="text-sm text-center text-red-600 bg-red-100 p-3 rounded-lg">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="relative">
+            <input
+              id="username"
+              type="text"
+              placeholder=" "
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="block w-full px-4 py-3 text-gray-900 bg-transparent border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-pink-500 peer"
+            />
+            <label
+              htmlFor="username"
+              className="absolute left-4 top-3 text-gray-500 duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+            >
+              Username
+            </label>
+          </div>
           <div className="relative">
             <input
               id="email"
