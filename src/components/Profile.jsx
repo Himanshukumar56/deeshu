@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { db } from "../firebase";
-import { doc, setDoc, deleteDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { User, Mail, MapPin, Save, Trash2 } from "lucide-react";
 
 const Profile = () => {
-  const { userData, user } = useAuth();
+  const { userData, user, setUserData } = useAuth();
   const [username, setUsername] = useState(userData?.username || "");
   const [location, setLocation] = useState(userData?.location || "");
   const [error, setError] = useState("");
@@ -49,25 +49,35 @@ const Profile = () => {
     setLoading(false);
   };
 
-  const handleDeleteProfile = async () => {
+  const handleRemovePartner = async () => {
     setError("");
     setSuccess("");
     setLoading(true);
 
-    if (!user) {
-      setError("You must be logged in to delete your profile.");
+    if (!user || !userData.partnerId) {
+      setError("No partner to remove.");
       setLoading(false);
       return;
     }
 
     try {
       const userDocRef = doc(db, "users", user.uid);
-      await deleteDoc(userDocRef);
-      setUsername("");
-      setLocation("");
-      setSuccess("Profile deleted successfully!");
+      const partnerDocRef = doc(db, "users", userData.partnerId);
+
+      await setDoc(userDocRef, { partnerId: null }, { merge: true });
+      await setDoc(partnerDocRef, { partnerId: null }, { merge: true });
+
+      // Add a notification for the partner
+      const notificationRef = doc(db, "notifications", userData.partnerId);
+      await setDoc(notificationRef, {
+        message: `${userData.username} has removed you as a partner.`,
+        timestamp: new Date(),
+      }, { merge: true });
+
+      setUserData({ ...userData, partnerId: null });
+      setSuccess("Partner removed successfully!");
     } catch (err) {
-      setError("Failed to delete profile.");
+      setError("Failed to remove partner.");
       console.error(err);
     }
     setLoading(false);
@@ -120,15 +130,17 @@ const Profile = () => {
               </div>
             </div>
             <div className="flex justify-end mt-8 space-x-4">
-              <button
-                type="button"
-                onClick={handleDeleteProfile}
-                className="inline-flex items-center bg-red-500 text-white py-3 px-6 rounded-full hover:bg-red-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
-                disabled={loading}
-              >
-                <Trash2 className="mr-2" size={20} />
-                {loading ? "Deleting..." : "Delete Profile"}
-              </button>
+              {userData?.partnerId && (
+                <button
+                  type="button"
+                  onClick={handleRemovePartner}
+                  className="inline-flex items-center bg-red-500 text-white py-3 px-6 rounded-full hover:bg-red-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
+                  disabled={loading}
+                >
+                  <Trash2 className="mr-2" size={20} />
+                  {loading ? "Removing..." : "Remove Partner"}
+                </button>
+              )}
               <button
                 type="submit"
                 className="inline-flex items-center bg-gradient-to-r from-rose-500 to-pink-500 text-white py-3 px-6 rounded-full hover:from-rose-600 hover:to-pink-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"

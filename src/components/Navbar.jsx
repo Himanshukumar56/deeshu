@@ -1,11 +1,11 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Menu, X, Sun, Moon } from 'lucide-react';
+import { Menu, X, Sun, Moon, Bell } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext.jsx';
 
 const Navbar = () => {
-  const { logout } = useAuth();
+  const { logout, unreadNotifications } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -40,6 +40,14 @@ const Navbar = () => {
             <button onClick={toggleTheme} className="p-2 rounded-full text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
               {theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
             </button>
+            <div className="relative">
+              <Link to="/notifications">
+                <Bell size={24} className="text-gray-400 hover:text-gray-600" />
+                {unreadNotifications && (
+                  <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500" />
+                )}
+              </Link>
+            </div>
             <button onClick={handleLogout} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md">
               Logout
             </button>

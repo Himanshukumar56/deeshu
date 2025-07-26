@@ -8,30 +8,32 @@ import {
   Users,
   Camera,
   Gift,
+  Trash2,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import ConnectionRequests from "./ConnectionRequests";
 import { db } from "../firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Link } from "react-router-dom";
 import DailyGoals from "./DailyGoals";
 
 const Dashboard = () => {
-  const { userData } = useAuth();
+  const { user, userData, setUserData } = useAuth();
   const [partnerData, setPartnerData] = useState(null);
   const [time, setTime] = useState("");
   const [weather, setWeather] = useState(null);
+  const [partnerWeather, setPartnerWeather] = useState(null);
 
   useEffect(() => {
-    const fetchWeather = async () => {
-      if (userData?.location) {
+    const fetchWeather = async (location, setWeatherState) => {
+      if (location) {
         try {
           const response = await fetch(
-            `https://api.openweathermap.org/data/2.5/weather?q=${userData.location}&units=metric&appid=${import.meta.env.VITE_OPENWEATHERMAP_API_KEY}`
+            `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=metric&appid=${import.meta.env.VITE_OPENWEATHERMAP_API_KEY}`
           );
           const data = await response.json();
           if (response.ok) {
-            setWeather(data);
+            setWeatherState(data);
           } else {
             console.error("Failed to fetch weather data:", data.message);
           }
@@ -41,8 +43,11 @@ const Dashboard = () => {
       }
     };
 
-    fetchWeather();
-  }, [userData?.location]);
+    fetchWeather(userData?.location, setWeather);
+    if (partnerData?.location) {
+      fetchWeather(partnerData.location, setPartnerWeather);
+    }
+  }, [userData?.location, partnerData?.location]);
 
   useEffect(() => {
     const fetchPartnerData = async () => {
@@ -69,6 +74,47 @@ const Dashboard = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  const handleRemovePartner = async () => {
+    if (!user || !userData.partnerId) {
+      return;
+    }
+
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+      const partnerDocRef = doc(db, "users", userData.partnerId);
+
+      await setDoc(userDocRef, { partnerId: null }, { merge: true });
+      await setDoc(partnerDocRef, { partnerId: null }, { merge: true });
+
+      // Add a notification for the partner
+      const notificationRef = doc(db, "notifications", userData.partnerId);
+      await setDoc(
+        notificationRef,
+        {
+          message: `${userData.username} has removed you as a partner.`,
+          timestamp: new Date(),
+        },
+        { merge: true }
+      );
+
+      setUserData({ ...userData, partnerId: null });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const getWeatherIcon = (weather) => {
+    if (!weather) return "☀️";
+    const main = weather.weather[0].main;
+    if (main.includes("Clear")) return "☀️";
+    if (main.includes("Clouds")) return "☁️";
+    if (main.includes("Rain")) return "🌧️";
+    if (main.includes("Drizzle")) return "🌦️";
+    if (main.includes("Thunderstorm")) return "⛈️";
+    if (main.includes("Snow")) return "❄️";
+    return "☀️";
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-black">
@@ -168,7 +214,7 @@ const Dashboard = () => {
                     <div className="bg-gradient-to-r from-rose-50 to-pink-50 dark:from-gray-700 dark:to-gray-600 p-4 rounded-2xl">
                       <div className="flex items-center">
                         <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
-                          <span className="text-2xl">☀️</span>
+                          <span className="text-2xl">{getWeatherIcon(weather)}</span>
                         </div>
                         <div className="ml-4">
                           <p className="text-2xl font-bold text-gray-800 dark:text-white">
@@ -185,7 +231,7 @@ const Dashboard = () => {
 
                 {/* Partner's Card */}
                 {partnerData && (
-                  <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-8 rounded-3xl shadow-xl border border-purple-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300">
+                  <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-8 rounded-3xl shadow-xl border border-purple-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300">
                     <div className="flex items-center justify-between mb-6">
                       <div className="flex items-center">
                         <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center mr-4">
@@ -214,19 +260,25 @@ const Dashboard = () => {
                         <p className="text-gray-600 dark:text-gray-400 text-sm">Friday, Jul 4</p>
                       </div>
                     </div>
+                    <button
+                      onClick={handleRemovePartner}
+                      className="absolute top-4 right-4 text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 size={20} />
+                    </button>
 
-                    {weather && (
+                    {partnerWeather && (
                       <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-600 p-4 rounded-2xl">
                         <div className="flex items-center">
                           <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
-                            <span className="text-2xl">☀️</span>
+                            <span className="text-2xl">{getWeatherIcon(partnerWeather)}</span>
                           </div>
                           <div className="ml-4">
                             <p className="text-2xl font-bold text-gray-800 dark:text-white">
-                              {weather.main.temp}°C
+                              {partnerWeather.main.temp}°C
                             </p>
                             <p className="text-gray-600 dark:text-gray-300">
-                              {weather.weather[0].main}
+                              {partnerWeather.weather[0].main}
                             </p>
                           </div>
                         </div>
@@ -243,30 +295,32 @@ const Dashboard = () => {
             {userData && userData.partnerId && <DailyGoals />}
 
             {/* Upcoming Together */}
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-8 rounded-3xl shadow-xl border border-purple-100 dark:border-gray-700">
-              <div className="flex items-center mb-6">
-                <Calendar className="text-purple-500 mr-3" size={28} />
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-                  Upcoming Together
-                </h2>
-              </div>
+            {userData && userData.partnerId && (
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-8 rounded-3xl shadow-xl border border-purple-100 dark:border-gray-700">
+                <div className="flex items-center mb-6">
+                  <Calendar className="text-purple-500 mr-3" size={28} />
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                    Upcoming Together
+                  </h2>
+                </div>
 
-              <div className="space-y-4">
-                <div className="text-center text-gray-500 dark:text-gray-400">
-                  Nothing planned yet.
+                <div className="space-y-4">
+                  <div className="text-center text-gray-500 dark:text-gray-400">
+                    Nothing planned yet.
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <Link
+                    to="/shared-calendar"
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 px-6 rounded-2xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold flex items-center justify-center"
+                  >
+                    <Calendar className="mr-2" size={20} />
+                    View Full Calendar
+                  </Link>
                 </div>
               </div>
-
-              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                <Link
-                  to="/shared-calendar"
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 px-6 rounded-2xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold flex items-center justify-center"
-                >
-                  <Calendar className="mr-2" size={20} />
-                  View Full Calendar
-                </Link>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

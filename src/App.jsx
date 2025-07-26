@@ -9,6 +9,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import FindPartner from './components/FindPartner';
 import SharedCalendar from './components/SharedCalendar';
 import Profile from './components/Profile';
+import Notifications from './components/Notifications';
 import { useAuth } from './hooks/useAuth';
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from './context/ThemeContext.jsx';
@@ -69,6 +70,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <Notifications />
             </ProtectedRoute>
           }
         />

@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [unreadNotifications, setUnreadNotifications] = useState(false);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
@@ -23,6 +24,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     let unsubscribeDoc;
+    let unsubscribeNotifications;
     if (user) {
       const userDocRef = doc(db, "users", user.uid);
       unsubscribeDoc = onSnapshot(userDocRef, (doc) => {
@@ -31,10 +33,22 @@ export const AuthProvider = ({ children }) => {
         }
         setLoading(false);
       });
+
+      const notificationDocRef = doc(db, "notifications", user.uid);
+      unsubscribeNotifications = onSnapshot(notificationDocRef, (doc) => {
+        if (doc.exists() && doc.data().message) {
+          setUnreadNotifications(true);
+        } else {
+          setUnreadNotifications(false);
+        }
+      });
     }
     return () => {
       if (unsubscribeDoc) {
         unsubscribeDoc();
+      }
+      if (unsubscribeNotifications) {
+        unsubscribeNotifications();
       }
     };
   }, [user]);
@@ -47,6 +61,9 @@ export const AuthProvider = ({ children }) => {
     user,
     userData,
     logout,
+    setUserData,
+    unreadNotifications,
+    setUnreadNotifications,
   };
 
   return (
