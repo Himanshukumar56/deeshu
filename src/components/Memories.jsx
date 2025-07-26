@@ -37,6 +37,7 @@ const Memories = () => {
     }
   }, [user, userData]);
 
+
   const handleImageChange = (e) => {
     if (e.target.files[0]) {
       const file = e.target.files[0];
@@ -61,6 +62,7 @@ const Memories = () => {
 
         await addDoc(collection(db, 'memories'), {
           userId: user.uid,
+          userName: userData.name || user.displayName,
           imageUrl: imageUrl,
           caption: caption,
           createdAt: new Date(),
@@ -152,8 +154,12 @@ const Memories = () => {
               <div key={memory.id} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-xl border border-purple-100 dark:border-gray-700 overflow-hidden group relative">
                 <img src={memory.imageUrl} alt={memory.caption} className="w-full h-72 object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                <div className="absolute bottom-0 left-0 p-6">
+                <div className="absolute bottom-0 left-0 p-6 w-full">
                   <p className="text-white font-semibold text-lg">{memory.caption}</p>
+                  <div className="text-xs text-gray-300 mt-1">
+                    <p>By: {memory.userName}</p>
+                    <p>{new Date(memory.createdAt.toDate()).toLocaleString()}</p>
+                  </div>
                 </div>
                 {user && user.uid === memory.userId && (
                   <button

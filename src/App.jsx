@@ -11,6 +11,7 @@ import SharedCalendar from './components/SharedCalendar';
 import Profile from './components/Profile';
 import Notifications from './components/Notifications';
 import Memories from './components/Memories';
+import Notes from './components/Notes';
 import { useAuth } from './hooks/useAuth';
 import { Toaster } from 'react-hot-toast';
 
@@ -86,6 +87,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Memories />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notes"
+          element={
+            <ProtectedRoute>
+              <Notes />
             </ProtectedRoute>
           }
         />

@@ -9,6 +9,7 @@ import {
   Camera,
   Gift,
   Trash2,
+  Pencil,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import ConnectionRequests from "./ConnectionRequests";
@@ -317,6 +318,29 @@ const Dashboard = () => {
                   >
                     <Calendar className="mr-2" size={20} />
                     View Full Calendar
+                  </Link>
+                </div>
+              </div>
+            )}
+            {/* Notes Section */}
+            {userData && userData.partnerId && (
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-8 rounded-3xl shadow-xl border border-rose-100 dark:border-gray-700">
+                <div className="flex items-center mb-6">
+                  <Pencil className="text-rose-500 mr-3" size={28} />
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                    Sweet Notes
+                  </h2>
+                </div>
+                <div className="text-center text-gray-500 dark:text-gray-400">
+                  Leave a sweet note for your partner.
+                </div>
+                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <Link
+                    to="/notes"
+                    className="w-full bg-gradient-to-r from-rose-500 to-pink-500 text-white py-3 px-6 rounded-2xl hover:from-rose-600 hover:to-pink-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold flex items-center justify-center"
+                  >
+                    <Pencil className="mr-2" size={20} />
+                    View Notes
                   </Link>
                 </div>
               </div>
