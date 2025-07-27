@@ -14,9 +14,20 @@ import {
 import { useAuth } from "../hooks/useAuth";
 import ConnectionRequests from "./ConnectionRequests";
 import { db } from "../firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  query,
+  where,
+  onSnapshot,
+  orderBy,
+  limit,
+} from "firebase/firestore";
 import { Link } from "react-router-dom";
-import DailyGoals from "./DailyGoals";
+import CommonGoals from "./CommonGoals";
+import moment from "moment";
 
 const Dashboard = () => {
   const { user, userData, setUserData } = useAuth();
@@ -24,6 +35,34 @@ const Dashboard = () => {
   const [time, setTime] = useState("");
   const [weather, setWeather] = useState(null);
   const [partnerWeather, setPartnerWeather] = useState(null);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+
+  useEffect(() => {
+    if (!user || !userData?.partnerId) return;
+
+    const q = query(
+      collection(db, "sharedEvents"),
+      where("members", "array-contains", user.uid),
+      where("start", ">=", new Date()),
+      orderBy("start"),
+      limit(3)
+    );
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const eventsArr = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          ...data,
+          id: doc.id,
+          start: data.start.toDate(),
+          end: data.end.toDate(),
+        };
+      });
+      setUpcomingEvents(eventsArr);
+    });
+
+    return () => unsubscribe();
+  }, [user, userData]);
 
   useEffect(() => {
     const fetchWeather = async (location, setWeatherState) => {
@@ -293,7 +332,7 @@ const Dashboard = () => {
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {userData && userData.partnerId && <DailyGoals />}
+{userData && userData.partnerId && <CommonGoals />}
 
             {/* Upcoming Together */}
             {userData && userData.partnerId && (
@@ -306,9 +345,33 @@ const Dashboard = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="text-center text-gray-500 dark:text-gray-400">
-                    Nothing planned yet.
-                  </div>
+                  {upcomingEvents.length > 0 ? (
+                    upcomingEvents.map((event) => (
+                      <div
+                        key={event.id}
+                        className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-700 dark:to-gray-600 p-4 rounded-xl flex items-center justify-between"
+                      >
+                        <div>
+                          <p className="font-bold text-gray-800 dark:text-white">
+                            {event.title}
+                          </p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            {moment(event.start).format("MMMM Do, YYYY")}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-purple-600 dark:text-purple-400">
+                            {moment(event.start).fromNow()}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center text-gray-500 dark:text-gray-400 py-4">
+                      <Calendar size={32} className="mx-auto mb-2" />
+                      <p>Nothing planned yet. Time to create some memories!</p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
