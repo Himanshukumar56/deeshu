@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth, db } from "../firebase";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { AuthContext } from "./AuthContext";
 
 export const AuthProvider = ({ children }) => {
@@ -29,7 +29,13 @@ export const AuthProvider = ({ children }) => {
       const userDocRef = doc(db, "users", user.uid);
       unsubscribeDoc = onSnapshot(userDocRef, (doc) => {
         if (doc.exists()) {
-          setUserData({ id: doc.id, ...doc.data() });
+          const data = doc.data();
+          if (!data.username_lowercase && data.username) {
+            updateDoc(userDocRef, {
+              username_lowercase: data.username.toLowerCase(),
+            });
+          }
+          setUserData({ id: doc.id, ...data });
         }
         setLoading(false);
       });

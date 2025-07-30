@@ -51,6 +51,7 @@ const Signup = () => {
         await setDoc(doc(db, "users", user.uid), {
           inviteCode: newInviteCode,
           username: newUsername,
+          username_lowercase: newUsername.toLowerCase(),
         });
       }
       navigate("/dashboard");
@@ -84,6 +85,7 @@ const Signup = () => {
           await setDoc(doc(db, "users", user.uid), {
             partnerId,
             username,
+            username_lowercase: username.toLowerCase(),
             email,
             location: "",
           });
@@ -103,6 +105,7 @@ const Signup = () => {
         await setDoc(doc(db, "users", user.uid), {
           inviteCode: newInviteCode,
           username: username,
+          username_lowercase: username.toLowerCase(),
           email: email,
           location: "",
         });

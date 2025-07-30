@@ -1,33 +1,28 @@
 {
   "indexes": [
     {
-      "collectionGroup": "memories",
+      "collectionGroup": "sharedEvents",
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "userId",
-          "order": "ASCENDING"
+          "fieldPath": "members",
+          "arrayConfig": "CONTAINS"
         },
         {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
+          "fieldPath": "start",
+          "order": "ASCENDING"
         }
       ]
     },
     {
-      "collectionGroup": "notes",
+      "collectionGroup": "users",
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "userId",
+          "fieldPath": "username_lowercase",
           "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
         }
       ]
     }
-  ],
-  "fieldOverrides": []
+  ]
 }

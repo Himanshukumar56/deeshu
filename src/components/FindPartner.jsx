@@ -5,8 +5,9 @@ import {
   query,
   where,
   getDocs,
-  addDoc,
   serverTimestamp,
+  setDoc,
+  doc,
 } from "firebase/firestore";
 import { useAuth } from "../hooks/useAuth";
 import { Heart, Search, Send } from "lucide-react";
@@ -29,14 +30,16 @@ const FindPartner = () => {
     try {
       const q = query(
         collection(db, "users"),
-        where("username", ">=", searchTerm),
-        where("username", "<=", searchTerm + "\uf8ff")
+        where("username_lowercase", ">=", searchTerm.toLowerCase()),
+        where("username_lowercase", "<=", searchTerm.toLowerCase() + "\uf8ff")
       );
       const querySnapshot = await getDocs(q);
-      const users = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const users = querySnapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        .filter((foundUser) => foundUser.id !== user.uid);
       setSearchResults(users);
       if (users.length === 0) {
         toast.success("No users found.");
@@ -49,9 +52,15 @@ const FindPartner = () => {
   };
 
   const handleSendRequest = async (toId) => {
+    if (toId === user.uid) {
+      toast.error("You cannot send a request to yourself.");
+      return;
+    }
     const toastId = toast.loading("Sending request...");
     try {
-      await addDoc(collection(db, "connectionRequests"), {
+      const requestId = `${user.uid}_${toId}`;
+      const requestDocRef = doc(db, "connectionRequests", requestId);
+      await setDoc(requestDocRef, {
         from: user.uid,
         to: toId,
         status: "pending",

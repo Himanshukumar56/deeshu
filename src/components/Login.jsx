@@ -5,7 +5,8 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from "firebase/auth";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { Mail, KeyRound, LogIn } from "lucide-react";
 
 const Login = () => {
@@ -17,7 +18,15 @@ const Login = () => {
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists() && !userDoc.data().username_lowercase) {
+        await updateDoc(userDocRef, {
+          username_lowercase: userDoc.data().username.toLowerCase(),
+        });
+      }
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);
@@ -28,7 +37,19 @@ const Login = () => {
     e.preventDefault();
     setError("");
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists() && !userDoc.data().username_lowercase) {
+        await updateDoc(userDocRef, {
+          username_lowercase: userDoc.data().username.toLowerCase(),
+        });
+      }
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);

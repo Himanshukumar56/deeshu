@@ -163,7 +163,11 @@ const SharedCalendar = () => {
     try {
       if (eventData.id) {
         const eventDocRef = doc(db, "sharedEvents", eventData.id);
-        await updateDoc(eventDocRef, eventToSave);
+        await updateDoc(eventDocRef, {
+          ...eventToSave,
+          members: [user.uid, userData.partnerId],
+          createdBy: user.uid,
+        });
         toast.success("Event updated successfully!");
       } else {
         await addDoc(collection(db, "sharedEvents"), {

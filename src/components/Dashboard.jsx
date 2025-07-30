@@ -246,7 +246,7 @@ const Dashboard = () => {
                       <h3 className="text-3xl font-bold text-gray-800 dark:text-white">
                         {time}
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm">Friday, Jul 4</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">{moment().format("dddd, MMM D")}</p>
                     </div>
                   </div>
 
@@ -297,7 +297,7 @@ const Dashboard = () => {
                         <h3 className="text-3xl font-bold text-gray-800 dark:text-white">
                           {time}
                         </h3>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm">Friday, Jul 4</p>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">{moment().format("dddd, MMM D")}</p>
                       </div>
                     </div>
                     <button
