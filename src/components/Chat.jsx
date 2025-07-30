@@ -3,26 +3,22 @@ import { db } from "../firebase";
 import {
   collection,
   query,
-  where,
   onSnapshot,
   addDoc,
   serverTimestamp,
   orderBy,
-  getDocs,
   updateDoc,
   doc,
   getDoc,
   deleteDoc,
 } from "firebase/firestore";
 import { useAuth } from "../hooks/useAuth";
-import { Trash2, Mic, StopCircle } from "lucide-react";
+import { Trash2, Mic, StopCircle, Check, CheckCheck } from "lucide-react";
 
 const Chat = ({ partnerId }) => {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [partnerIsTyping, setPartnerIsTyping] = useState(false);
   const [partnerData, setPartnerData] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
@@ -53,26 +49,19 @@ const Chat = ({ partnerId }) => {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const msgs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setMessages(msgs);
-    });
 
-    return () => unsubscribe();
-  }, [chatId]);
-
-  useEffect(() => {
-    const chatRef = collection(db, "chats");
-    const q = query(chatRef, where("users", "==", chatId));
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data.typingStatus && data.typingStatus.userId !== user.uid) {
-          setPartnerIsTyping(data.typingStatus.isTyping);
+      // Mark messages as seen
+      snapshot.docs.forEach(async (doc) => {
+        const message = doc.data();
+        if (message.senderId === partnerId && !message.seen) {
+          await updateDoc(doc.ref, { seen: true });
         }
       });
     });
 
     return () => unsubscribe();
-  }, [chatId, user.uid]);
+  }, [chatId, partnerId]);
+
 
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -95,7 +84,6 @@ const Chat = ({ partnerId }) => {
     });
 
     setNewMessage("");
-    handleTyping(false);
   };
 
   const handleAudioUpload = async (audioBlob) => {
@@ -170,41 +158,8 @@ const Chat = ({ partnerId }) => {
     await deleteDoc(messageRef);
   };
 
-  const handleTyping = async (isTyping) => {
-    const chatRef = collection(db, "chats");
-    const chatDocRef = (
-      await getDocs(query(chatRef, where("users", "==", chatId)))
-    ).docs[0]?.ref;
-
-    if (chatDocRef) {
-      await updateDoc(chatDocRef, {
-        typingStatus: {
-          userId: user.uid,
-          isTyping: isTyping,
-        },
-      });
-    } else {
-      await addDoc(chatRef, {
-        users: chatId,
-        typingStatus: {
-          userId: user.uid,
-          isTyping: isTyping,
-        },
-      });
-    }
-  };
-
   const handleInputChange = (e) => {
     setNewMessage(e.target.value);
-    if (!isTyping) {
-      setIsTyping(true);
-      handleTyping(true);
-    }
-    // Reset typing status after a delay
-    setTimeout(() => {
-      setIsTyping(false);
-      handleTyping(false);
-    }, 2000);
   };
 
   return (
@@ -275,6 +230,11 @@ const Chat = ({ partnerId }) => {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
+                {msg.senderId === user.uid && (
+                  <div className="flex justify-end mt-1">
+                    {msg.seen ? <CheckCheck size={16} className="text-blue-500" /> : <Check size={16} className="text-gray-400" />}
+                  </div>
+                )}
               </div>
             </div>
             {msg.senderId === user.uid && (
@@ -286,11 +246,6 @@ const Chat = ({ partnerId }) => {
             )}
           </div>
         ))}
-        {partnerIsTyping && (
-          <div className="text-gray-500 dark:text-gray-400 italic px-4">
-            Partner is typing...
-          </div>
-        )}
       </div>
       <form
         onSubmit={handleSendMessage}
