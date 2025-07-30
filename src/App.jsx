@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import Dashboard from './components/Dashboard';
@@ -18,11 +18,12 @@ import { Toaster } from 'react-hot-toast';
 
 function App() {
   const { user } = useAuth();
+  const location = useLocation();
 
   return (
     <div className="bg-gray-50 font-poppins">
       <Toaster position="top-center" reverseOrder={false} />
-      {user && <Navbar />}
+      {user && !['/', '/signup'].includes(location.pathname) && <Navbar />}
       <main>
         <Routes>
           <Route path="/" element={<Login />} />
